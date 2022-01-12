@@ -66,7 +66,7 @@ class Player(object):
         self.rect = pygame.draw.circle(SCREEN, self.color, (self.x, self.y), self.radius)
         self.in_air = True
         self.has_jumped = False
-        self.jump_count = 20
+        self.jump_count = 40
 
     def draw(self, screen):
         pygame.draw.circle(screen, self.color, (self.x, self.y), self.radius)
@@ -75,12 +75,12 @@ class Player(object):
 
     def gravity(self, floor_y):
         if floor_y > self.y:
-            self.y += 10
+            self.y += 5
             self.in_air = True
         else:
             self.in_air = False
             self.has_jumped = False
-            self.jump_count = 20
+            self.jump_count = 40
 
 
     def move(self, key_pressed):
@@ -95,7 +95,7 @@ class Player(object):
         if key_pressed[pygame.K_s] and self.in_air:
             self.y += 10
         elif not self.has_jumped and key_pressed[pygame.K_w] and self.jump_count > 0:
-            self.y -= 20
+            self.y -= 10
             self.jump_count -= 1       
 
 
@@ -116,7 +116,7 @@ class Game(object):
         self.clock = pygame.time.Clock()
         self.floor = Floor()
         self.player1 = Player(300, 600, 70, RED)
-        self.ball = Ball(WIDTH/2, HEIGHT/2 + 100, 30, 1, WHITE)
+        self.ball = Ball(WIDTH/2, HEIGHT/2 + 200, 30, 1, WHITE)
         #self.player_group = pygame.sprite.Group()
         #self.player_group.add(self.player1)
 
@@ -156,8 +156,8 @@ class Game(object):
                     self.ball.py -= overlap * (self.ball.py - self.player1.y) / distance
 
                     # We can also displace the player for shockback
-                    # self.player1.x += overlap * (self.ball.px - self.player1.x) / distance
-                    # self.player1.y += overlap * (self.ball.py - self.player1.y) / distance
+                    self.player1.x += overlap * (self.ball.px - self.player1.x) / distance
+                    self.player1.y += overlap * (self.ball.py - self.player1.y) / distance
 
                 # Dynamic collisions
                 # Friction                          # https://www.youtube.com/watch?v=LPzyNOHY3A4&t=328s  -   24:00
@@ -174,11 +174,27 @@ class Game(object):
                 if (math.fabs(self.ball.vx * self.ball.vx + self.ball.vy * self.ball.vy) < 0.1):    # stop the balls when moving slow enough
                     self.ball.vx = 0
                     self.ball.vy = 0
+
+
+                # dynamic collisions
+                distance = distance_between_circles((self.player1.x, self.player1.y), (self.ball.px, self.ball.py))
+
+                # Normal
+                nx = (self.ball.px - self.player1.x) / distance
+                ny = (self.ball.py - self.player1.y) / distance
+
+                # Tangent
+                tx = -ny
+                ty = nx
+
+                # Dot product tangent
+                
+
                 
 
                 # Gravity
                 self.player1.gravity(self.floor.y)
-                self.ball.gravity(self.floor.y)
+                #self.ball.gravity(self.floor.y)
 
                 # Movement
                 key_pressed = pygame.key.get_pressed()
